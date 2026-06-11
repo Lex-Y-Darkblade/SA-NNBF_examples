@@ -240,44 +240,6 @@ if __name__ == "__main__":
         model = DDP(ansatz)
 
 
-    from pynqs.ansatz.rnn.graph_mps import Graph_MPS
-    from pynqs.sample.base import ARParams, aux_WF_Params
-    import networkx as nx
-    graph_nn0 = nx.read_graphml("molecule/H50-2.00-Bohr-sto6g.graphml")
-    aux_wf = Graph_MPS_RNN(
-        use_symmetry=True,
-        param_dtype=torch.complex64,
-        hilbert_local=4,
-        nqubits=sorb,
-        alpha_nele=nele//2,
-        nele=nele,
-        device=device,
-        dcut=30,
-        graph=graph_nn0,
-        params_file=f"molecule/H50-focus-dcut-30-params-complex-no-padding.pth",
-        rank_independent_sampling = True,
-    )
-    if device == "cuda":
-        aux_wf = DDP(aux_wf, device_ids=[local_rank], output_device=local_rank)
-    else:
-        aux_wf = DDP(aux_wf)
-
-    aux_ar_params = ARParams(
-        n_sample=mcmc_param.n_walker,
-        use_dfs_sample=True,
-        use_same_tree=False,
-        min_batch=10000,
-        min_tree_height=20,
-    )
-
-    aux_params = aux_WF_Params(
-        aux_wf=aux_wf,
-        aux_sampler_params=aux_ar_params
-    )
-
-    mcmc_param.aux_wf_params = aux_params
-
-
     from pynqs.sample import SampleParams
 
     sampler_param = SampleParams(
